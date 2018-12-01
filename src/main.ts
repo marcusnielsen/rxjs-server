@@ -15,13 +15,13 @@ export function main(
   const user = new User(db, userLogInStream, userLogOutStream);
 
   const updateOnlineStatusCommandStream = merge(
-    user.loggedInEventStream().pipe(
+    user.getLoggedInEventStream().pipe(
       map(event => ({
         meta: { cid: event.meta.cid },
         payload: { name: event.payload.name, status: "logged_in" }
       }))
     ),
-    user.loggedOutEventStream().pipe(
+    user.getLoggedOutEventStream().pipe(
       map(event => ({
         meta: { cid: event.meta.cid },
         payload: { name: event.payload.name, status: "logged_out" }

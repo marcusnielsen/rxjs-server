@@ -22,15 +22,15 @@ const modules = main(
 
 merge(
   modules.user
-    .loggedInEventStream()
+    .getLoggedInEventStream()
     .pipe(map(msg => [`<${msg.payload.name}> logged in.`, msg.meta.cid])),
 
   modules.user
-    .loggedOutEventStream()
+    .getLoggedOutEventStream()
     .pipe(map(msg => [`<${msg.payload.name}> logged out.`, msg.meta.cid])),
 
   modules.onlineStatus
-    .statusUpdatedEventStream()
+    .getStatusUpdatedEventStream()
     .pipe(
       map(msg => [
         `<${msg.payload.name}> changed status to <${msg.payload.status}>.`,
