@@ -1,10 +1,11 @@
 import { main } from "./main";
 import { Db } from "./drivers/db";
 import { Log } from "./drivers/log";
-import { Subject } from "rxjs";
+import { Subject, merge } from "rxjs";
 import uuidV4 from "uuid/v4";
 import { IMessage } from "./types";
 import { PubSub } from "./drivers/pub-sub";
+import { map } from "rxjs/operators";
 
 const db = new Db();
 const pubSub = new PubSub();
@@ -19,17 +20,29 @@ const modules = main(
   logOutSubject.asObservable()
 );
 
-modules.user.loggedInEventStream().forEach((action: IMessage) => {
-  // TODO: Continue here.
-  log.info(`TODO: Message for loggedInEvent.`, action.meta.cid);
+merge(
+  modules.user
+    .loggedInEventStream()
+    .pipe(map(msg => [`<${msg.payload.name}> logged in.`, msg.meta.cid])),
+
+  modules.user
+    .loggedOutEventStream()
+    .pipe(map(msg => [`<${msg.payload.name}> logged out.`, msg.meta.cid])),
+
+  modules.onlineStatus
+    .statusUpdatedEventStream()
+    .pipe(
+      map(msg => [
+        `<${msg.payload.name}> changed status to <${msg.payload.status}>.`,
+        msg.meta.cid
+      ])
+    )
+).forEach(([text, cid]) => {
+  log.info(text, cid);
 });
 
-modules.onlineStatus.statusUpdatedEventStream().forEach((action: IMessage) => {
-  log.info(
-    `<${action.payload.name}> changed status to <${action.payload.status}>.`,
-    action.meta.cid
-  );
+logInSubject.next({
+  meta: { cid: uuidV4() },
+  payload: { name: "moa", password: "password1" }
 });
-
-logInSubject.next({ meta: { cid: uuidV4() }, payload: { name: "moa" } });
 logOutSubject.next({ meta: { cid: uuidV4() }, payload: { name: "moa" } });

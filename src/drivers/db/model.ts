@@ -2,15 +2,15 @@ import { IDb } from "./types";
 
 export class Db implements IDb {
   private state: {
-    users: Array<{ name: string; password: string }>;
+    users: Array<{ name: string; password: string; logged_in: boolean }>;
     online_statuses: Array<{ name: string; status: string }>;
   };
 
   constructor() {
     this.state = {
       users: [
-        { name: "moa", password: "password1" },
-        { name: "marcus", password: "password2" }
+        { name: "moa", password: "password1", logged_in: false },
+        { name: "marcus", password: "password2", logged_in: false }
       ],
       online_statuses: [
         { name: "moa", status: "logged_out" },
@@ -22,8 +22,11 @@ export class Db implements IDb {
   public none(query: string, v: any[]): Promise<any> {
     if (query.includes("users")) {
       this.state.users
-        .filter(dbRow => dbRow.name === v[1])
-        .forEach(dbRow => (dbRow.name = v[0]));
+        .filter(
+          dbRow =>
+            (dbRow.name === v[1] && v.length === 2) || dbRow.password === v[2]
+        )
+        .forEach(dbRow => (dbRow.logged_in = v[0]));
     } else {
       this.state.online_statuses
         .filter(dbRow => dbRow.name === v[1])
