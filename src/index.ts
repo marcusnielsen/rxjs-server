@@ -8,7 +8,7 @@ import { PubSub } from "./drivers/pub-sub";
 import { map } from "rxjs/operators";
 
 const db = new Db();
-const pubSub = new PubSub();
+const pubSub = new PubSub(3000);
 const log = new Log();
 const logInSubject = new Subject<IMessage>();
 const logOutSubject = new Subject<IMessage>();
@@ -17,13 +17,23 @@ const modules = main(
   db,
   pubSub,
   logInSubject.asObservable(),
-  logOutSubject.asObservable()
+  logOutSubject.asObservable(),
+  5000
 );
 
 merge(
   modules.user
     .getLoggedInEventStream()
     .pipe(map(msg => [`<${msg.payload.name}> logged in.`, msg.meta.cid])),
+
+  modules.user
+    .getSessionTimedOutEventStream()
+    .pipe(
+      map(msg => [
+        `The session for <${msg.payload.name}> timed out.`,
+        msg.meta.cid
+      ])
+    ),
 
   modules.user
     .getLoggedOutEventStream()
@@ -45,4 +55,3 @@ logInSubject.next({
   meta: { cid: uuidV4() },
   payload: { name: "moa", password: "password1" }
 });
-logOutSubject.next({ meta: { cid: uuidV4() }, payload: { name: "moa" } });

@@ -1,12 +1,12 @@
 import { Observable, Subject } from "rxjs";
-import { delay, filter, map } from "rxjs/operators";
+import { delay, filter, map, share } from "rxjs/operators";
 import { IPubSubMessage, IPubSub } from ".";
 import { IMessage } from "../../types";
 
 export class PubSub implements IPubSub {
   private pubSubSubject: Subject<IPubSubMessage>;
 
-  constructor() {
+  constructor(private delay: number) {
     this.pubSubSubject = new Subject<IPubSubMessage>();
   }
 
@@ -31,7 +31,7 @@ export class PubSub implements IPubSub {
     return this.pubSubSubject.pipe(
       filter(msg => msg.topic === topic),
       map(msg => ({ meta: { ...msg.meta }, payload: { ...msg.payload } })),
-      delay(1000)
+      delay(this.delay)
     );
   }
 }

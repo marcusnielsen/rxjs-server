@@ -10,9 +10,10 @@ export function main(
   db: IDb,
   pubSub: IPubSub,
   userLogInStream: Observable<IMessage>,
-  userLogOutStream: Observable<IMessage>
+  userLogOutStream: Observable<IMessage>,
+  sessionTimeout?: number
 ) {
-  const user = new User(db, userLogInStream, userLogOutStream);
+  const user = new User(db, userLogInStream, userLogOutStream, sessionTimeout);
 
   const updateOnlineStatusCommandStream = merge(
     user.getLoggedInEventStream().pipe(
