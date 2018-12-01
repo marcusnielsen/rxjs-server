@@ -16,7 +16,7 @@ test("status updated to <logged_in>", async () => {
   const { model, updateStatusCommandSubject, uuidSeed } = setup();
 
   const resultP = model
-    .statusUpdatedEventStream()
+    .getStatusUpdatedEventStream()
     .pipe(take(1))
     .toPromise();
 
